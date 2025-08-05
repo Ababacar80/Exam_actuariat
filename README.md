@@ -1,6 +1,6 @@
-# 🏥 Exam Actuariat - Prédiction de Fraude à l'Assurance
+# 🏥 Exam Actuariat - Prédiction de Sinistres d'Assurance
 
-Un package Python pour la prédiction de fraude dans le domaine de l'assurance, développé dans le cadre d'un examen actuariel.
+Un package Python pour la prédiction de sinistres dans le domaine de l'assurance santé, développé dans le cadre d'un examen actuariel.
 
 ## 🎯 Objectif
 
@@ -12,7 +12,7 @@ Ce projet vise à développer des modèles de machine learning pour prédire les
 - **Preprocessing** : Nettoyage, encodage et normalisation des données
 - **Analyse exploratoire** : Corrélations, statistiques descriptives et détection d'outliers
 - **Visualisation** : Graphiques interactifs et heatmaps
-- **Modélisation** : Multiple algorithmes (Random Forest, XGBoost, LightGBM, Gradient Boosting)
+- **Modélisation** : Algorithmes de boosting avancés (XGBoost, LightGBM)
 - **Évaluation** : Métriques complètes et validation croisée
 
 ## 🔧 Installation
@@ -57,6 +57,9 @@ poetry install --extras dev
 
 # Pour la documentation
 poetry install --extras docs
+
+# Installer les algorithmes de boosting
+pip install xgboost lightgbm
 ```
 
 ## 📁 Structure du Projet
@@ -76,7 +79,7 @@ exam-actuariat/
 ├── scripts/
 │   └── train.py              # Script d'entraînement
 ├── data/
-│   └── raw/                  # Données brutes
+│   └──                   # Données brutes
 ├── models/                   # Modèles sauvegardés
 ├── tests/                    # Tests unitaires
 ├── pyproject.toml
@@ -86,7 +89,7 @@ exam-actuariat/
 ## 🚀 Utilisation
 
 ### 1. Préparer les données
-Placez votre fichier de données dans `data/raw/`. Le fichier doit contenir au minimum :
+Placez votre fichier de données dans `data/`. Le fichier doit contenir au minimum :
 - `age` : Âge du patient
 - `gender` : Genre (Male/Female)
 - `bmi` : Indice de masse corporelle
@@ -100,14 +103,18 @@ python scripts/train.py
 
 ### 3. Utilisation programmatique
 ```python
-from src.exam_actuariat import data_loading, data_processing, models
+from src.exam_actuariat import data_loading, data_processing, models, features
 
 # Charger les données
-df = data_loading.load_raw('data/raw/your_file.xlsx')
+df = data_loading.load_raw('data/insurance-demographic-health.csv')
 
 # Preprocessing
 df_clean = data_processing.clean_data(df)
 df_encoded = data_processing.encodage(df_clean)
+
+# Analyse des features
+feature_importances = features.get_feature_importance(df_encoded, target='claim')
+print(feature_importances.head())
 
 # Entraîner un modèle
 from sklearn.model_selection import train_test_split
@@ -137,11 +144,16 @@ print(results)
 - `analyze_smoking_impact(df)` : Impact du tabagisme
 - `detect_outliers(df, column)` : Détection d'outliers
 
+### `features`
+- `get_feature_importance(df, target)` : Calcule l'importance des variables avec Random Forest
+
 ### `models`
 - `train_xgboost(X, y)` : Entraîne un modèle XGBoost
 - `train_lightgbm(X, y)` : Entraîne un modèle LightGBM
-- `train_random_forest(X, y)` : Entraîne un Random Forest
+- `train_linear_regression(X, y)` : Entraîne une régression linéaire
 - `evaluate_model(model, X, y)` : Évalue un modèle
+- `save_model(model, filepath)` : Sauvegarde un modèle
+- `load_model(filepath)` : Charge un modèle
 
 ### `evaluation`
 - `compare_models(results)` : Compare plusieurs modèles
@@ -181,6 +193,22 @@ model = models.train_xgboost(
 )
 ```
 
+## ⚡ Algorithmes Supportés
+
+### XGBoost (Extreme Gradient Boosting)
+- **Avantages** : Très performant, gestion des interactions non-linéaires
+- **Usage** : Champion des compétitions Kaggle
+- **Installation** : `pip install xgboost`
+
+### LightGBM (Light Gradient Boosting Machine)
+- **Avantages** : Rapide, efficace en mémoire
+- **Usage** : Optimal pour les gros datasets
+- **Installation** : `pip install lightgbm`
+
+### Régression Linéaire
+- **Avantages** : Simple, interprétable
+- **Usage** : Baseline et comparaison
+
 ## 🤝 Contribution
 
 1. Fork le projet
@@ -200,8 +228,8 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
 ## 🐛 Problèmes Connus
 
-- XGBoost et LightGBM sont optionnels. Le script utilisera Random Forest en fallback.
-- Les visualisations nécessitent un environnement graphique.
+- XGBoost et LightGBM doivent être installés séparément
+- Les visualisations nécessitent un environnement graphique
 
 ## 📚 Documentation
 

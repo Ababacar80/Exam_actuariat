@@ -84,15 +84,9 @@ def main():
         print(f"Taille d'entraînement: {X_train.shape}")
         print(f"Taille de test: {X_test.shape}")
 
-        # Entraînement des modèles
+        # Entraînement des modèles (uniquement XGBoost et LightGBM)
         print("\nEntraînement des modèles...")
         results = []
-
-        # Random Forest (fallback si XGBoost/LightGBM non disponibles)
-        print("Entraînement Random Forest...")
-        rf_model = models.train_random_forest(X_train, y_train)
-        rf_results = models.evaluate_model(rf_model, X_test, y_test, model_name='Random Forest')
-        results.append(rf_results)
 
         # XGBoost (si disponible)
         try:
@@ -112,11 +106,12 @@ def main():
         except ImportError as e:
             print(f"LightGBM non disponible: {e}")
 
-        # Gradient Boosting
-        print("Entraînement Gradient Boosting...")
-        gb_model = models.train_gradient_boosting(X_train, y_train)
-        gb_results = models.evaluate_model(gb_model, X_test, y_test, model_name='Gradient Boosting')
-        results.append(gb_results)
+        # Vérifier qu'au moins un modèle a été entraîné
+        if not results:
+            print("\n❌ Aucun modèle disponible!")
+            print("Installation recommandée:")
+            print("pip install xgboost lightgbm")
+            return
 
         # Comparaison des modèles
         print("\nComparaison des modèles...")
@@ -129,16 +124,18 @@ def main():
         print(f"\nValidation croisée pour le meilleur modèle: {best_model_name}")
         
         # Sélectionner le meilleur modèle
-        if best_model_name == 'Random Forest':
-            best_model = rf_model
-        elif best_model_name == 'XGBoost' and 'xgb_model' in locals():
+        if best_model_name == 'XGBoost' and 'xgb_model' in locals():
             best_model = xgb_model
         elif best_model_name == 'LightGBM' and 'lgb_model' in locals():
             best_model = lgb_model
-        elif best_model_name == 'Gradient Boosting':
-            best_model = gb_model
         else:
-            best_model = rf_model  # Fallback
+            # Fallback au premier modèle disponible
+            if 'xgb_model' in locals():
+                best_model = xgb_model
+                best_model_name = 'XGBoost'
+            elif 'lgb_model' in locals():
+                best_model = lgb_model
+                best_model_name = 'LightGBM'
 
         mae_cv, std_cv = evaluation.cross_validate_model(best_model, X, y, cv=5)
         print(f"{best_model_name} Cross-Validation MAE: {mae_cv:.2f} ± {std_cv:.2f}")
