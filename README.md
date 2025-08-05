@@ -89,12 +89,7 @@ exam-actuariat/
 ## 🚀 Utilisation
 
 ### 1. Préparer les données
-Placez votre fichier de données dans `data/`. Le fichier doit contenir au minimum :
-- `age` : Âge du patient
-- `gender` : Genre (Male/Female)
-- `bmi` : Indice de masse corporelle
-- `smoker` : Statut fumeur (Yes/No)
-- `claim` : Montant du sinistre (variable cible)
+Placez le fichier de données dans `data/`. 
 
 ### 2. Exécuter l'analyse complète
 ```bash
@@ -198,12 +193,12 @@ model = models.train_xgboost(
 ### XGBoost (Extreme Gradient Boosting)
 - **Avantages** : Très performant, gestion des interactions non-linéaires
 - **Usage** : Champion des compétitions Kaggle
-- **Installation** : `pip install xgboost`
+- **Installation** : `poetry add xgboost`
 
 ### LightGBM (Light Gradient Boosting Machine)
 - **Avantages** : Rapide, efficace en mémoire
 - **Usage** : Optimal pour les gros datasets
-- **Installation** : `pip install lightgbm`
+- **Installation** : `poetry add lightgbm`
 
 ### Régression Linéaire
 - **Avantages** : Simple, interprétable
@@ -216,10 +211,6 @@ model = models.train_xgboost(
 3. Commit vos changements (`git commit -m 'Add some AmazingFeature'`)
 4. Push sur la branche (`git push origin feature/AmazingFeature`)
 5. Ouvrir une Pull Request
-
-## 📝 License
-
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
 ## 👨‍💻 Auteur
 
