@@ -1,59 +1,43 @@
 import pandas as pd
 import numpy as np
 
-def analyze_correlation(df_clean):
-    """Analyze the correlation between numerical features in the DataFrame."""
+def analyze_correlation(df):
+    """Analyze correlation between features and target."""
     correlations = {}
     
-    if "age" in df_clean.columns and "claim" in df_clean.columns:
-        correlations['age_claim'] = df_clean['age'].corr(df_clean['claim'])
-    if "bmi" in df_clean.columns and "claim" in df_clean.columns:
-        correlations['bmi_claim'] = df_clean['bmi'].corr(df_clean['claim'])
-    if "bloodpressure" in df_clean.columns and "claim" in df_clean.columns:
-        correlations['bloodpressure_claim'] = df_clean['bloodpressure'].corr(df_clean['claim'])
-
+    # Calculate correlations with numerical columns only
+    numerical_cols = df.select_dtypes(include=[np.number]).columns
+    
+    if 'claim' in numerical_cols:
+        target_correlations = df[numerical_cols].corr()['claim']
+        
+        for col in numerical_cols:
+            if col != 'claim':
+                correlations[f'{col}_claim'] = target_correlations[col]
+    
     return correlations
 
-def analyze_by_gender(df_clean):
-    """Analyze the average claim amount by gender."""
-    if "gender" in df_clean.columns and "claim" in df_clean.columns:
-        return df_clean.groupby('gender')['claim'].agg(['mean', 'std', 'var'])  
+def analyze_by_gender(df):
+    """Analyze statistics by gender."""
+    if 'gender' in df.columns and 'claim' in df.columns:
+        gender_stats = df.groupby('gender')['claim'].describe()
+        return gender_stats
     return None
 
-def analyze_smoking_impact(df_clean):
+def analyze_smoking_impact(df):
     """Analyze the impact of smoking on claim amounts."""
-    if "smoker" in df_clean.columns and "claim" in df_clean.columns:
-        mean_smoker = df_clean.loc[df_clean["smoker"]=='Yes', 'claim'].mean()
-        mean_non_smoker = df_clean.loc[df_clean["smoker"]=='No', 'claim'].mean()
-
-        df_clean['smoker_bin'] = df_clean['smoker'].map({'Yes': 1, 'No': 0})
-        corr_smoker = df_clean['smoker_bin'].corr(df_clean['claim'])
-
-        return {
-            'mean_smoker': mean_smoker,
-            'mean_non_smoker': mean_non_smoker,
-            'correlation_smoker_claim': corr_smoker
-        }
-    return None
-
-def get_basic_statistics(df_clean):
-    """Get basic statistics for numerical columns."""
-    numerical_cols = df_clean.select_dtypes(include=[np.number]).columns
-    return df_clean[numerical_cols].describe()
-
-def detect_outliers(df_clean, column, method='iqr'):
-    """Detect outliers in a given column using IQR method."""
-    if column not in df_clean.columns:
-        raise ValueError(f"Column '{column}' not found in DataFrame.")
-    
-    if method == 'iqr':
-        Q1 = df_clean[column].quantile(0.25)
-        Q3 = df_clean[column].quantile(0.75)
-        IQR = Q3 - Q1
-        lower_bound = Q1 - 1.5 * IQR
-        upper_bound = Q3 + 1.5 * IQR
+    if 'smoker' in df.columns and 'claim' in df.columns:
+        # Calculate mean claim amounts for smokers and non-smokers
+        smoker_mean = df[df['smoker'] == 'Yes']['claim'].mean() if 'Yes' in df['smoker'].values else 0
+        non_smoker_mean = df[df['smoker'] == 'No']['claim'].mean() if 'No' in df['smoker'].values else 0
         
-        outliers = df_clean[(df_clean[column] < lower_bound) | (df_clean[column] > upper_bound)]
-        return outliers
-    
+        # Calculate correlation between smoking and claim amount
+        smoking_binary = df['smoker'].map({'Yes': 1, 'No': 0})
+        correlation_smoker_claim = smoking_binary.corr(df['claim'])
+        
+        return {
+            'mean_smoker': smoker_mean,
+            'mean_non_smoker': non_smoker_mean,
+            'correlation_smoker_claim': correlation_smoker_claim
+        }
     return None
