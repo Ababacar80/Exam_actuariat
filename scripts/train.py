@@ -2,93 +2,74 @@ import sys
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 
-# Ajouter le répertoire parent au path pour les imports
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-# Correction des imports
 from src.exam_actuariat import (
     data_loading, 
     data_processing, 
     features, 
-    visualization, 
     exploration,
     models,
     evaluation
 )
 
 def main():
-    # Configuration
-    DATA_PATH = Path('data/insurance-demographic-health.csv')  # Utiliser Path
+    DATA_PATH = Path('/home/ababacar/as10/exam-actuariat/data/insurance-demographic-health.csv')
     TARGET = 'claim'
 
     try:
-        # Load data
+        # Load and clean data
         print("Chargement des données...")
         df = data_loading.load_raw(DATA_PATH)
         print(f"Données chargées: {df.shape}")
 
-        # Nettoyage - Correction: data_processing au lieu de preprocessing
         print("Nettoyage des données...")
         df_clean = data_processing.clean_data(df)
         print(f"Données nettoyées: {df_clean.shape}")
 
-        # Analyse correlations
+        # Exploration rapide
         print("\nAnalyse des corrélations...")
         correlations = exploration.analyze_correlation(df_clean)
         for key, value in correlations.items():
             print(f"{key}: {value:.3f}")
 
-        # Analyse par genre
         print("\nAnalyse par genre...")
         gender_stats = exploration.analyze_by_gender(df_clean)
         if gender_stats is not None:
             print("Statistiques par genre:")
             print(gender_stats)
 
-        # Analyse de l'impact du tabagisme
         print("\nAnalyse de l'impact du tabagisme...")
         smoking_stats = exploration.analyze_smoking_impact(df_clean)
         if smoking_stats:
             print("Smoking Impact Analysis")
             print(f"Mean Claim Amount for Smokers: {smoking_stats['mean_smoker']:.2f}")
             print(f"Mean Claim Amount for Non-Smokers: {smoking_stats['mean_non_smoker']:.2f}")
-            print(f"Correlation between Smoking and Claim Amount: {smoking_stats['correlation_smoker_claim']:.3f}")
-            # Correction de la syntaxe
             print(f"Correlation tabagisme: {smoking_stats['correlation_smoker_claim']:.3f}")
 
-        # Encodage des variables et feature importance
         print("\nEncodage des variables...")
         df_encoded = data_processing.encodage(df_clean)
         
-        print("Calcul de l'importance des features...")
-        feature_importances = features.get_feature_importance(df_encoded, target=TARGET)
-        print("Feature Importances:")
-        print(feature_importances.head())
-
-        # Visualisation
-        #print("\nGénération des visualisations...")
-        #visualization.plot_correlation(df_encoded)
-        #visualization.plot_age_vs_claim(df_clean)
-        #if smoking_stats:
-         #   visualization.plot_smoking_impact(smoking_stats)
-        #visualization.plot_feature_importance(feature_importances)
-
-        # Préparation des données pour la modélisation
-        print("\nPréparation des données pour la modélisation...")
+        # SPLIT UNE SEULE FOIS
+        print("\nPréparation des données...")
         X = df_encoded.drop(columns=[TARGET])
         y = df_encoded[TARGET]
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42
         )
-        
-        print(f"Taille d'entraînement: {X_train.shape}")
-        print(f"Taille de test: {X_test.shape}")
+        print(f"Train: {X_train.shape}, Test: {X_test.shape}")
 
-        # Entraînement des modèles (uniquement XGBoost et LightGBM)
+        # Feature importance sur train seulement
+        print("Calcul de l'importance des features...")
+        feature_importances = features.get_feature_importance(X_train, y_train)
+        print("Top 5 features:")
+        print(feature_importances.head())
+
+        # Modélisation
         print("\nEntraînement des modèles...")
         results = []
 
-        # XGBoost (si disponible)
+        # XGBoost
         try:
             print("Entraînement XGBoost...")
             xgb_model = models.train_xgboost(X_train, y_train)
@@ -97,7 +78,7 @@ def main():
         except ImportError as e:
             print(f"XGBoost non disponible: {e}")
 
-        # LightGBM (si disponible)
+        # LightGBM
         try:
             print("Entraînement LightGBM...")
             lgb_model = models.train_lightgbm(X_train, y_train)
