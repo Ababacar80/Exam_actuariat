@@ -1,4 +1,4 @@
-# 🏥 Exam Actuariat - Prédiction de Sinistres d'Assurance
+# 🏥 Prédiction de Sinistres d'Assurance
 
 Un package Python pour la prédiction de sinistres dans le domaine de l'assurance santé, développé dans le cadre d'un examen actuariel.
 
